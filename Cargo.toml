@@ -1,0 +1,18 @@
+[package]
+name = "todl"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+walkdir = "2"
+regex = "1"
+git2 = "0.15"
+lazy_static = "1.4"
+clap = { version = "4.0", features = ["derive"] }
+
+[dev-dependencies]
+criterion = "0.4"
+
+[[bench]]
+name = "search"
+harness = false
