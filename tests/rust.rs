@@ -1,10 +1,10 @@
-use std::{io::Cursor, path::{PathBuf, Path}};
+use std::{io::Cursor, path::Path};
 
 use git2::Repository;
-use todl::{search_reader, TagKind, search_files};
+use todl::{search_files, SourceFile, SourceKind, TagKind};
 
 #[test]
-fn find_comments() {
+fn find_comments_rust() {
     const SOURCE: &str = "
         // TODO: Find the todo
         //! Optimize: Make it faster
@@ -15,7 +15,8 @@ fn find_comments() {
         /*** Bug: It is broken */
     ";
 
-    let tags: Vec<_> = search_reader(PathBuf::from("testing"), Cursor::new(SOURCE)).collect();
+    let s = Cursor::new(SOURCE);
+    let tags: Vec<_> = SourceFile::new(SourceKind::Rust, Path::new("testing"), s).collect();
     println!("{tags:#?}");
     assert_eq!(7, tags.len());
 
@@ -55,7 +56,8 @@ fn find_todo_macro() {
         todo!(\"I'll implement this later\")
     ";
 
-    let tags: Vec<_> = search_reader(PathBuf::from("testing"), Cursor::new(SOURCE)).collect();
+    let s = Cursor::new(SOURCE);
+    let tags: Vec<_> = SourceFile::new(SourceKind::Rust, Path::new("testing"), s).collect();
     println!("{tags:#?}");
     assert_eq!(2, tags.len());
 
@@ -83,7 +85,7 @@ fn find_rustc_repo() {
     for tag in &tags {
         println!("{tag}");
     }
-    assert_eq!(11473, tags.len());
+    assert_eq!(11477, tags.len());
 }
 
 #[test]

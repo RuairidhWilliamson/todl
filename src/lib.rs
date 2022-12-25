@@ -6,7 +6,7 @@ use std::{
 
 use lazy_static::lazy_static;
 use regex::Regex;
-use walkdir::{DirEntry, WalkDir};
+use walkdir::WalkDir;
 
 struct SourceIdentifier {}
 
@@ -18,40 +18,139 @@ impl SourceIdentifier {
         let Some(ext) = path.extension() else {
             return None;
         };
-        // OPTIMISE: Maybe use ext.to_string_lossy()
         match ext.to_str().unwrap() {
             "rs" => Some(SourceKind::Rust),
+            "c" | "cpp" | "cc" | "h" | "hpp" | "java" | "cs" => Some(SourceKind::CLike),
             _ => None,
         }
     }
 }
 
 #[derive(Debug)]
-enum SourceKind {
+pub enum SourceKind {
     Rust,
+    CLike,
 }
 
-struct SourceFile {
-    entry: DirEntry,
+impl SourceKind {}
+
+pub struct SourceFile<R: Read> {
+    path: PathBuf,
     kind: SourceKind,
+    inner: BufReader<R>,
+    line: String,
+    line_number: usize,
 }
 
-impl SourceFile {
-    fn new(source_identifier: &SourceIdentifier, entry: DirEntry) -> Option<Self> {
-        let Some(kind) = source_identifier.identify(entry.path()) else {
+impl<R: Read> SourceFile<R> {
+    pub fn new(kind: SourceKind, path: &Path, reader: R) -> Self {
+        Self {
+            path: path.to_owned(),
+            kind,
+            inner: BufReader::new(reader),
+            line: String::new(),
+            line_number: 0,
+        }
+    }
+
+    fn next_rust(&mut self) -> Option<Tag> {
+        loop {
+            if let Some(tag) = self.find_rust_todo_macro() {
+                // TODO: Clearing the line here means we ignore all other possible matches on this
+                // line. It would be better to remove the part of the line that we have scanned, or
+                // have a slice into the line to represent the part still to search
+                self.line.clear();
+                return Some(tag);
+            }
+            if let Some(tag) = self.find_clike_comment() {
+                self.line.clear();
+                return Some(tag);
+            }
+            self.line.clear();
+            let n = self.inner.read_line(&mut self.line).unwrap();
+            // EOF
+            if n == 0 {
+                return None;
+            }
+            self.line_number += 1;
+        }
+    }
+
+    fn next_clike(&mut self) -> Option<Tag> {
+        loop {
+            self.line.clear();
+            let n = self.inner.read_line(&mut self.line).unwrap();
+            // EOF
+            if n == 0 {
+                return None;
+            }
+            self.line_number += 1;
+            if let Some(tag) = self.find_clike_comment() {
+                return Some(tag);
+            }
+        }
+    }
+}
+
+lazy_static! {
+    static ref CLIKE_COMMENT_TAG_REGEX: Regex =
+        Regex::new(r"/(?:/+|\*+)!? ?(?P<tag>[!a-zA-Z0-9_]+): ?(?P<msg>.+)").unwrap();
+    static ref RUST_TODO_MACRO: Regex = Regex::new(r#"todo!\((?:"([^"]*)")?\)"#).unwrap();
+}
+
+impl<R: Read> SourceFile<R> {
+    fn find_rust_todo_macro(&self) -> Option<Tag> {
+        let Some(caps) = RUST_TODO_MACRO.captures(&self.line) else {
             return None;
         };
-        Some(Self { entry, kind })
+        let message = caps
+            .get(1)
+            .map(|x| x.as_str().to_owned())
+            .unwrap_or_default();
+        Some(Tag {
+            kind: TagKind::TodoMacro,
+            line: self.line_number,
+            path: self.path.clone(),
+            message,
+        })
     }
 
-    fn path(&self) -> &Path {
-        self.entry.path()
+    fn find_clike_comment(&self) -> Option<Tag> {
+        let Some(caps) = CLIKE_COMMENT_TAG_REGEX.captures(&self.line) else {
+            return None;
+        };
+        let raw_tag = caps.get(1).unwrap().as_str();
+        if raw_tag == "https" || raw_tag == "http" {
+            return None;
+        }
+        let kind = TagKind::new(raw_tag);
+        let mut message = caps.get(2).unwrap().as_str().to_owned();
+        if message.ends_with("*/") {
+            message = message[..message.len() - 2].trim().to_owned();
+        }
+        Some(Tag {
+            kind,
+            line: self.line_number,
+            path: self.path.clone(),
+            message,
+        })
     }
 }
 
-impl std::fmt::Debug for SourceFile {
+impl<R: Read> Iterator for SourceFile<R> {
+    type Item = Tag;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.kind {
+            SourceKind::Rust => self.next_rust(),
+            SourceKind::CLike => self.next_clike(),
+        }
+    }
+}
+
+impl<R: Read> std::fmt::Debug for SourceFile<R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}: {}", self.kind, self.entry.path().display())
+        write!(f, "{:?}: {}", self.kind, self.path.display())
     }
 }
 
@@ -148,59 +247,15 @@ pub fn search_files(path: &Path) -> impl Iterator<Item = Tag> {
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
-        .filter_map(move |e| SourceFile::new(&source_identifier, e))
-        .flat_map(|entry| {
-            let f = File::open(entry.entry.path()).unwrap();
-            search_reader(entry.path().to_owned(), f)
+        .filter_map(move |e| {
+            let Some(kind) = source_identifier.identify(e.path()) else {
+                return None;
+            };
+            Some(SourceFile::new(
+                kind,
+                e.path(),
+                File::open(e.path()).unwrap(),
+            ))
         })
-}
-
-lazy_static! {
-    static ref COMMENT_TAG_REGEX: Regex =
-        Regex::new(r"/(?:/+|\*+)!? ?(?P<tag>[!a-zA-Z0-9_]+): ?(?P<msg>.+)").unwrap();
-    static ref RUST_TODO_MACRO: Regex = Regex::new(r#"todo!\((?:"([^"]*)")?\)"#).unwrap();
-}
-
-pub fn search_reader<R>(path: PathBuf, reader: R) -> impl Iterator<Item = Tag>
-where
-    R: Read,
-{
-    let reader = BufReader::new(reader);
-    reader
-        .lines()
-        .filter_map(|l| l.ok())
-        .enumerate()
-        .flat_map(move |(i, line)| {
-            let rust_todos_iter = RUST_TODO_MACRO.captures_iter(&line).map(|caps| {
-                let message = caps
-                    .get(1)
-                    .map(|x| x.as_str().to_owned())
-                    .unwrap_or_default();
-                Tag {
-                    kind: TagKind::TodoMacro,
-                    line: i + 1,
-                    path: path.to_path_buf(),
-                    message,
-                }
-            });
-            let comment_iter = COMMENT_TAG_REGEX.captures_iter(&line).filter_map(|caps| {
-                let raw_tag = caps.get(1).unwrap().as_str();
-                if raw_tag == "https" || raw_tag == "http" {
-                    return None;
-                }
-                let kind = TagKind::new(raw_tag);
-                let mut message = caps.get(2).unwrap().as_str().to_owned();
-                if message.ends_with("*/") {
-                    message = message[..message.len() - 2].trim().to_owned();
-                }
-                Some(Tag {
-                    kind,
-                    line: i + 1,
-                    path: path.to_path_buf(),
-                    message,
-                })
-            });
-            // TODO: Remove this allocation somehow, maybe with explicit lifetimes
-            rust_todos_iter.chain(comment_iter).collect::<Vec<_>>()
-        })
+        .flatten()
 }
