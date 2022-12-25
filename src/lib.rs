@@ -1,7 +1,7 @@
 use std::{
     fs::File,
     io::{BufRead, BufReader, Read},
-    path::{Path, PathBuf},
+    path::{Path, PathBuf}, str::FromStr,
 };
 
 use lazy_static::lazy_static;
@@ -14,6 +14,7 @@ impl SourceIdentifier {
     fn new() -> Self {
         Self {}
     }
+
     fn identify(&self, path: &Path) -> Option<SourceKind> {
         let Some(ext) = path.extension() else {
             return None;
@@ -155,7 +156,7 @@ impl<R: Read> std::fmt::Debug for SourceFile<R> {
 }
 
 // Incomplete list based on https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TagKind {
     Todo,
     TodoMacro,
@@ -175,21 +176,63 @@ pub enum TagKind {
 
 impl TagKind {
     fn new(tag: &str) -> Self {
+        let Ok(tag) = Self::from_str(tag) else {
+            return Self::Custom(tag.to_owned());
+        };
+        tag
+    }
+
+    pub fn level(&self) -> TagLevel {
+        match self {
+            TagKind::Todo => TagLevel::Improvement,
+            TagKind::TodoMacro => TagLevel::Improvement,
+            TagKind::Bug => TagLevel::Fix,
+            TagKind::Fix => TagLevel::Fix,
+            TagKind::Note => TagLevel::Information,
+            TagKind::Undone => TagLevel::Information,
+            TagKind::Hack => TagLevel::Information,
+            TagKind::Xxx => TagLevel::Information,
+            TagKind::Optimize => TagLevel::Improvement,
+            TagKind::Safety => TagLevel::Information,
+            TagKind::Invariant => TagLevel::Information,
+            TagKind::Lint => TagLevel::Information,
+            TagKind::Ignored => TagLevel::Information,
+            TagKind::Custom(_) => TagLevel::Custom,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct UnknownTagKind;
+
+impl std::fmt::Display for UnknownTagKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Unknown tag kind")
+    }
+}
+
+impl std::error::Error for UnknownTagKind {}
+
+impl FromStr for TagKind {
+    type Err = UnknownTagKind;
+
+    fn from_str(tag: &str) -> Result<Self, Self::Err> {
         let lowercase_tag = tag.to_lowercase();
         match lowercase_tag.as_str() {
-            "todo" => Self::Todo,
-            "bug" | "debug" => Self::Bug,
-            "fixme" | "fix" => Self::Fix,
-            "note" | "nb" => Self::Note,
-            "undone" => Self::Undone,
-            "hack" | "bodge" | "kludge" => Self::Hack,
-            "xxx" => Self::Xxx,
-            "optimize" | "optimise" | "optimizeme" | "optimiseme" => Self::Optimize,
-            "safety" => Self::Safety,
-            "invariant" => Self::Invariant,
-            "lint" => Self::Lint,
-            "ignored" => Self::Ignored,
-            tag => Self::Custom(tag.to_string()),
+            "todo" => Ok(Self::Todo),
+            "todo!" => Ok(Self::TodoMacro),
+            "bug" | "debug" => Ok(Self::Bug),
+            "fixme" | "fix" => Ok(Self::Fix),
+            "note" | "nb" => Ok(Self::Note),
+            "undone" => Ok(Self::Undone),
+            "hack" | "bodge" | "kludge" => Ok(Self::Hack),
+            "xxx" => Ok(Self::Xxx),
+            "optimize" | "optimise" | "optimizeme" | "optimiseme" => Ok(Self::Optimize),
+            "safety" => Ok(Self::Safety),
+            "invariant" => Ok(Self::Invariant),
+            "lint" => Ok(Self::Lint),
+            "ignored" => Ok(Self::Ignored),
+            _ => Err(UnknownTagKind),
         }
     }
 }
@@ -216,6 +259,50 @@ impl std::fmt::Display for TagKind {
                 Self::Custom(custom) => custom,
             }
         )
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TagLevel {
+    Fix,
+    Improvement,
+    Information,
+    Custom,
+}
+
+impl std::fmt::Display for TagLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Self::Fix => "Fix",
+            Self::Improvement => "Improvement",
+            Self::Information => "Information",
+            Self::Custom => "Custom",
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct UnknownTagLevel;
+
+impl std::fmt::Display for UnknownTagLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Unknown tag level")
+    }
+}
+
+impl std::error::Error for UnknownTagLevel {}
+
+impl FromStr for TagLevel {
+    type Err = UnknownTagLevel;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "fix" => Ok(Self::Fix),
+            "improvement" => Ok(Self::Improvement),
+            "information" => Ok(Self::Information),
+            "custom" => Ok(Self::Custom),
+            _ => Err(UnknownTagLevel),
+        }
     }
 }
 
