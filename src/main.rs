@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use chrono::{DateTime, Local};
 use clap::Parser;
-use todl::{search_files, SearchOptions, TagKind, TagLevel};
+use todl::{search_files, SearchOptions, tag::{TagLevel, TagKind}};
 
 #[derive(Debug, Parser)]
 struct Args {

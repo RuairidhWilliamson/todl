@@ -1,7 +1,7 @@
 use std::{io::Cursor, path::Path};
 
 use git2::Repository;
-use todl::{search_files, SourceFile, SourceKind, TagKind};
+use todl::{source::{SourceFile, SourceKind}, tag::TagKind, search_files, SearchOptions};
 
 #[test]
 fn find_comments_rust() {
@@ -75,12 +75,12 @@ fn find_todo_macro() {
 fn find_rustc_repo() {
     // We will clone the actual rust repo into temp
     let url = "https://github.com/rust-lang/rust.git";
-    let path = "temp/rust";
+    let path = Path::new("temp/rust");
     // Clone or open the repo
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
     repo.set_head("refs/tags/1.64.0").unwrap();
 
-    let tags: Vec<_> = search_files(Path::new(path), Default::default()).collect();
+    let tags: Vec<_> = search_files(path, Default::default()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
@@ -91,15 +91,32 @@ fn find_rustc_repo() {
 #[test]
 fn find_backtrace_repo() {
     let url = "https://github.com/rust-lang/backtrace-rs.git";
-    let path = "temp/backtrace-rs";
+    let path = Path::new("temp/backtrace-rs");
     // Clone or open the repo
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
     repo.set_head("refs/tags/0.3.67").unwrap();
 
-    let tags: Vec<_> = search_files(Path::new(path), Default::default()).collect();
+    let tags: Vec<_> = search_files(path, Default::default()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
     }
     assert_eq!(18, tags.len());
+}
+
+#[test]
+fn find_this_repo() {
+    let path = Path::new(".");
+    let search_options = SearchOptions {
+        git_ignore: true,
+        git_blame: true,
+    };
+    let tags: Vec<_> = search_files(path, search_options).collect();
+    println!("Found {} tags", tags.len());
+    for tag in &tags {
+        println!("{tag}");
+    }
+    // We test that we find some tags but not too many because that is probably wrong
+    assert!(!tags.is_empty());
+    assert!(tags.len() < 100);
 }

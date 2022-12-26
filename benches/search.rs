@@ -2,7 +2,7 @@ use std::{io::Cursor, path::Path};
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use git2::Repository;
-use todl::{search_files, SourceFile, SourceKind};
+use todl::{source::{SourceFile, SourceKind}, search_files};
 
 fn search_short_string(c: &mut Criterion) {
     const SOURCE: &str = "

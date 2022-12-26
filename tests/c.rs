@@ -1,6 +1,6 @@
 use std::{io::Cursor, path::Path};
 
-use todl::{SourceFile, TagKind};
+use todl::{source::{SourceFile, SourceKind}, tag::TagKind};
 
 #[test]
 fn find_comments_c() {
@@ -15,7 +15,7 @@ fn find_comments_c() {
     ";
 
     let s = Cursor::new(SOURCE);
-    let tags: Vec<_> = SourceFile::new(todl::SourceKind::CLike, Path::new("testing"), s).collect();
+    let tags: Vec<_> = SourceFile::new(SourceKind::CLike, Path::new("testing"), s).collect();
     println!("{tags:#?}");
     assert_eq!(7, tags.len());
 
