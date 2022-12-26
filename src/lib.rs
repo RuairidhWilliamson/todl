@@ -3,7 +3,6 @@
 //! purpose. See <https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags>
 //! for more information.
 //!
-//! # Example
 //! In this example there is a `TODO` comment tag and a rust `todo!` macro.
 //! ```
 //! // TODO: Add cool features
