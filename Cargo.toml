@@ -9,6 +9,7 @@ regex = "1"
 git2 = "0.15"
 lazy_static = "1.4"
 clap = { version = "4.0", features = ["derive"] }
+chrono = "0.4"
 
 [dev-dependencies]
 criterion = "0.4"

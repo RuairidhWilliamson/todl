@@ -29,7 +29,7 @@ fn search_rust_backtrace_repo(c: &mut Criterion) {
 
     c.bench_function("search_rust_backtrace_repo", |b| {
         b.iter(|| {
-            assert_eq!(18, search_files(Path::new(path)).count());
+            assert_eq!(18, search_files(Path::new(path), Default::default()).count());
         })
     });
 }
@@ -42,9 +42,9 @@ fn search_rustc_repo(c: &mut Criterion) {
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
     repo.set_head("refs/tags/1.64.0").unwrap();
 
-    c.bench_function("search_rust_backtrace_repo", |b| {
+    c.bench_function("search_rustc_repo", |b| {
         b.iter(|| {
-            assert_eq!(11477, search_files(Path::new(path)).count());
+            assert_eq!(11477, search_files(Path::new(path), Default::default()).count());
         })
     });
 }

@@ -80,7 +80,7 @@ fn find_rustc_repo() {
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
     repo.set_head("refs/tags/1.64.0").unwrap();
 
-    let tags: Vec<_> = search_files(Path::new(path)).collect();
+    let tags: Vec<_> = search_files(Path::new(path), Default::default()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
@@ -96,7 +96,7 @@ fn find_backtrace_repo() {
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
     repo.set_head("refs/tags/0.3.67").unwrap();
 
-    let tags: Vec<_> = search_files(Path::new(path)).collect();
+    let tags: Vec<_> = search_files(Path::new(path), Default::default()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
