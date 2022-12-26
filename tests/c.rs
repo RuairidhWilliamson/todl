@@ -1,6 +1,9 @@
 use std::{io::Cursor, path::Path};
 
-use todl::{source::{SourceFile, SourceKind}, tag::TagKind};
+use todl::{
+    source::{SourceFile, SourceKind},
+    tag::TagKind,
+};
 
 #[test]
 fn find_comments_c() {

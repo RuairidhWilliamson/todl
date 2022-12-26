@@ -1,7 +1,12 @@
 use std::{io::Cursor, path::Path};
 
 use git2::Repository;
-use todl::{source::{SourceFile, SourceKind}, tag::TagKind, search_files, SearchOptions};
+use todl::{
+    search_files,
+    source::{SourceFile, SourceKind},
+    tag::TagKind,
+    SearchOptions,
+};
 
 #[test]
 fn find_comments_rust() {
@@ -80,7 +85,7 @@ fn find_rustc_repo() {
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
     repo.set_head("refs/tags/1.64.0").unwrap();
 
-    let tags: Vec<_> = search_files(path, Default::default()).collect();
+    let tags: Vec<_> = search_files(path, SearchOptions::no_git()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
@@ -96,7 +101,7 @@ fn find_backtrace_repo() {
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
     repo.set_head("refs/tags/0.3.67").unwrap();
 
-    let tags: Vec<_> = search_files(path, Default::default()).collect();
+    let tags: Vec<_> = search_files(path, SearchOptions::no_git()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
@@ -107,10 +112,7 @@ fn find_backtrace_repo() {
 #[test]
 fn find_this_repo() {
     let path = Path::new(".");
-    let search_options = SearchOptions {
-        git_ignore: true,
-        git_blame: true,
-    };
+    let search_options = SearchOptions::default();
     let tags: Vec<_> = search_files(path, search_options).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {

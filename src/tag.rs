@@ -1,25 +1,42 @@
-use std::{str::FromStr, time::SystemTime, path::PathBuf};
+use std::{path::PathBuf, str::FromStr, time::SystemTime};
 
 // Incomplete list based on https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags
+/// The kind of tag found. (Tags are not case sensitive)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TagKind {
+    /// `TODO`
     Todo,
+    /// Rust `todo!()` macro
     TodoMacro,
+    /// `BUG` or `DEBUG`
     Bug,
+    /// `FIXME` or `FIX`
     Fix,
+    /// `NOTE` or `NB`
     Note,
+    /// `UNDONE`
     Undone,
+    /// `HACK` or `BODGE` or `KLUDGE`
     Hack,
+    /// `XXX`
     Xxx,
+    /// `OPTIMIZE` or `OPTIMIZEME` or `OPTIMISE` or `OPTIMISEME`
     Optimize,
+    /// `SAFETY`
     Safety,
+    /// `INVARIANT`
     Invariant,
+    /// `LINT`
     Lint,
+    /// `IGNORED`
     Ignored,
+    /// Anything that doesn't match one of the TagKind variants but still looks like a comment tag
+    /// Specifically excluded from this are `http` and `https`
     Custom(String),
 }
 
 impl TagKind {
+    /// Parses a tag from a string
     pub fn new(tag: &str) -> Self {
         let Ok(tag) = Self::from_str(tag) else {
             return Self::Custom(tag.to_owned());
@@ -27,6 +44,7 @@ impl TagKind {
         tag
     }
 
+    /// Gets the tag level for a tag
     pub fn level(&self) -> TagLevel {
         match self {
             TagKind::Todo => TagLevel::Improvement,
@@ -47,6 +65,8 @@ impl TagKind {
     }
 }
 
+/// Represents an error when trying to parse a tag that doesn't match one of the known enum
+/// variants. This will normally be handled by using `TagKind::Custom`.
 #[derive(Debug)]
 pub struct UnknownTagKind;
 
@@ -107,11 +127,38 @@ impl std::fmt::Display for TagKind {
     }
 }
 
+/// The level of severity or urgency behind a tag. Useful for filtering tags quickly.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TagLevel {
+    /// Something is broken and needs fixing
+    ///
+    /// Includes:
+    /// - [`TagKind::Bug`]
+    /// - [`TagKind::Fix`]
     Fix,
+    /// Something needs to be improved
+    ///
+    /// Includes:
+    /// - [`TagKind::Todo`]
+    /// - [`TagKind::TodoMacro`]
+    /// - [`TagKind::Optimize`]
     Improvement,
+    /// Extra information about the code
+    ///
+    /// Includes:
+    /// - [`TagKind::Note`]
+    /// - [`TagKind::Undone`]
+    /// - [`TagKind::Hack`]
+    /// - [`TagKind::Xxx`]
+    /// - [`TagKind::Safety`]
+    /// - [`TagKind::Invariant`]
+    /// - [`TagKind::Lint`]
+    /// - [`TagKind::Ignored`]
     Information,
+    /// Custom tag did not match known tags
+    ///
+    /// Includes:
+    /// - [`TagKind::Custom`]
     Custom,
 }
 
@@ -130,6 +177,8 @@ impl std::fmt::Display for TagLevel {
     }
 }
 
+/// Parsing tag level from a string failed, the tag level provided did not match one of the tag
+/// levels.
 #[derive(Debug)]
 pub struct UnknownTagLevel;
 
@@ -155,12 +204,20 @@ impl FromStr for TagLevel {
     }
 }
 
+/// Tag represents a comment tag found in a source file.
 #[derive(Debug)]
 pub struct Tag {
+    /// The relative path of the source file
     pub path: PathBuf,
+    /// The line number of the tag in the source file
     pub line: usize,
+    /// The kind of tag
     pub kind: TagKind,
+    /// The message provided by the tag. The message will only contain information on the same line
+    /// as the tag comment.
     pub message: String,
+    /// An optional system time when the tag was last changed. Only present if `git_blame` is
+    /// enabled in search options, a git repository is found and the source file is not ignored in git.
     pub time: Option<SystemTime>,
 }
 

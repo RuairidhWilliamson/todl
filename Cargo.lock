@@ -921,7 +921,7 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "todl"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "chrono",
  "clap 4.0.32",

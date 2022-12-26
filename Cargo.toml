@@ -1,7 +1,10 @@
 [package]
 name = "todl"
-version = "0.0.0"
+description = "Tool for finding comment tags in source code"
+version = "0.1.0"
 edition = "2021"
+rust-version = "1.65"
+license = "MIT"
 
 [dependencies]
 walkdir = "2"

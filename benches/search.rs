@@ -2,7 +2,11 @@ use std::{io::Cursor, path::Path};
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use git2::Repository;
-use todl::{source::{SourceFile, SourceKind}, search_files};
+use todl::{
+    search_files,
+    source::{SourceFile, SourceKind},
+    SearchOptions,
+};
 
 fn search_short_string(c: &mut Criterion) {
     const SOURCE: &str = "
@@ -31,7 +35,7 @@ fn search_rust_backtrace_repo(c: &mut Criterion) {
         b.iter(|| {
             assert_eq!(
                 18,
-                search_files(Path::new(path), Default::default()).count()
+                search_files(Path::new(path), SearchOptions::no_git()).count()
             );
         })
     });
@@ -49,7 +53,7 @@ fn search_rustc_repo(c: &mut Criterion) {
         b.iter(|| {
             assert_eq!(
                 11477,
-                search_files(Path::new(path), Default::default()).count()
+                search_files(Path::new(path), SearchOptions::no_git()).count()
             );
         })
     });
