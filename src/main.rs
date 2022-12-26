@@ -59,10 +59,19 @@ fn main() {
         let tag_msg = format!("{}: {}", tag.kind, tag.message);
         let length = 40;
         let tag_msg = clamp_str(&tag_msg, length);
-        let time = tag.time.map(|t| {
-            let datetime: DateTime<Local> = t.into();
-            format!("{}", datetime.format("%F %T"))
-        }).unwrap_or_default();
-        println!("{:length$} {} {}:{}", tag_msg, time, tag.path.display(), tag.line);
+        let time = tag
+            .time
+            .map(|t| {
+                let datetime: DateTime<Local> = t.into();
+                format!("{}", datetime.format("%F %T"))
+            })
+            .unwrap_or_default();
+        println!(
+            "{:length$} {} {}:{}",
+            tag_msg,
+            time,
+            tag.path.display(),
+            tag.line
+        );
     }
 }

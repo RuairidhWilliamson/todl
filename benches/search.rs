@@ -29,7 +29,10 @@ fn search_rust_backtrace_repo(c: &mut Criterion) {
 
     c.bench_function("search_rust_backtrace_repo", |b| {
         b.iter(|| {
-            assert_eq!(18, search_files(Path::new(path), Default::default()).count());
+            assert_eq!(
+                18,
+                search_files(Path::new(path), Default::default()).count()
+            );
         })
     });
 }
@@ -44,7 +47,10 @@ fn search_rustc_repo(c: &mut Criterion) {
 
     c.bench_function("search_rustc_repo", |b| {
         b.iter(|| {
-            assert_eq!(11477, search_files(Path::new(path), Default::default()).count());
+            assert_eq!(
+                11477,
+                search_files(Path::new(path), Default::default()).count()
+            );
         })
     });
 }
