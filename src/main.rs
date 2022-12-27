@@ -63,7 +63,13 @@ fn main() {
         let length = 40;
         let tag_msg = clamp_str(&tag_msg, length);
         if let Some(git_info) = &tag.git_info {
-            println!("{:length$} {} {}:{}", tag_msg, git_info, tag.path.display(), tag.line);
+            println!(
+                "{:length$} {} {}:{}",
+                tag_msg,
+                git_info,
+                tag.path.display(),
+                tag.line
+            );
         } else {
             println!("{:length$} {}:{}", tag_msg, tag.path.display(), tag.line);
         }

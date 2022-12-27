@@ -225,8 +225,8 @@ pub struct Tag {
     /// The message provided by the tag. The message will only contain information on the same line
     /// as the tag comment.
     pub message: String,
-    /// An optional git info when the tag was last changed. Only present if `git_blame` is
-    /// enabled in search options, a git repository is found and the source file is not ignored in git.
+    /// An optional git info when the tag was last changed. Only present if [`super::SearchOptions::git_blame`] is
+    /// enabled in [`super::SearchOptions`], a git repository is found and the source file is not ignored in git.
     pub git_info: Option<GitInfo>,
 }
 
@@ -256,7 +256,7 @@ impl std::fmt::Display for Tag {
 }
 
 impl Tag {
-    /// Get the blame for a tag and the time for the final commit
+    /// Get the blame for a tag. Gets the time and author for the final commit
     pub fn get_blame_info(&self, repo: &Repository) -> Option<GitInfo> {
         let blame = repo
             .blame_file(try_strip_leading_dot(&self.path), Default::default())

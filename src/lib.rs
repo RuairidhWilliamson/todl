@@ -24,10 +24,7 @@
 #![warn(clippy::unwrap_used)]
 #![warn(missing_docs)]
 
-use std::{
-    fs::File,
-    path::Path,
-};
+use std::{fs::File, path::Path};
 
 use git2::Repository;
 use walkdir::WalkDir;
