@@ -119,7 +119,7 @@ impl<R: Read> SourceFile<R> {
             line: self.line_number,
             path: self.path.clone(),
             message,
-            time: None,
+            git_info: None,
         })
     }
 
@@ -141,7 +141,7 @@ impl<R: Read> SourceFile<R> {
             line: self.line_number,
             path: self.path.clone(),
             message,
-            time: None,
+            git_info: None,
         })
     }
 }

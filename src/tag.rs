@@ -1,4 +1,13 @@
-use std::{path::PathBuf, str::FromStr, time::SystemTime};
+use std::{
+    path::PathBuf,
+    str::FromStr,
+    time::{Duration, SystemTime},
+};
+
+use chrono::{DateTime, Local};
+use git2::Repository;
+
+use crate::try_strip_leading_dot;
 
 // Incomplete list based on https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags
 /// The kind of tag found. (Tags are not case sensitive)
@@ -216,21 +225,66 @@ pub struct Tag {
     /// The message provided by the tag. The message will only contain information on the same line
     /// as the tag comment.
     pub message: String,
-    /// An optional system time when the tag was last changed. Only present if `git_blame` is
+    /// An optional git info when the tag was last changed. Only present if `git_blame` is
     /// enabled in search options, a git repository is found and the source file is not ignored in git.
-    pub time: Option<SystemTime>,
+    pub git_info: Option<GitInfo>,
 }
 
 impl std::fmt::Display for Tag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}: {} {}:{} {:?}",
-            self.kind,
-            self.message,
-            self.path.display(),
-            self.line,
-            self.time,
-        )
+        if let Some(git_info) = &self.git_info {
+            write!(
+                f,
+                "{}: {} {} {}:{}",
+                self.kind,
+                self.message,
+                git_info,
+                self.path.display(),
+                self.line
+            )
+        } else {
+            write!(
+                f,
+                "{}: {} {}:{}",
+                self.kind,
+                self.message,
+                self.path.display(),
+                self.line,
+            )
+        }
+    }
+}
+
+impl Tag {
+    /// Get the blame for a tag and the time for the final commit
+    pub fn get_blame_info(&self, repo: &Repository) -> Option<GitInfo> {
+        let blame = repo
+            .blame_file(try_strip_leading_dot(&self.path), Default::default())
+            .ok()?;
+        let blame_hunk = blame.get_line(self.line)?;
+        let commit = repo.find_commit(blame_hunk.final_commit_id()).ok()?;
+        let seconds = commit.time().seconds();
+        let duration = Duration::new(seconds as u64, 0);
+        let git_info = GitInfo {
+            time: SystemTime::UNIX_EPOCH + duration,
+            author: commit.author().name()?.to_owned(),
+        };
+        Some(git_info)
+    }
+}
+
+/// Git information about a tag
+#[derive(Debug)]
+pub struct GitInfo {
+    /// The last time the tag line was modified
+    pub time: SystemTime,
+    /// The author of the last modification
+    pub author: String,
+}
+
+impl std::fmt::Display for GitInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let time: DateTime<Local> = self.time.into();
+        write!(f, "{} {}", time.format("%F %T"), self.author)
     }
 }

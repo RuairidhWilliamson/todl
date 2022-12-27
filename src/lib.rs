@@ -27,7 +27,6 @@
 use std::{
     fs::File,
     path::Path,
-    time::{Duration, SystemTime},
 };
 
 use git2::Repository;
@@ -131,7 +130,7 @@ pub fn search_files<P: AsRef<Path>>(
         .map(move |mut tag| {
             if git_blame {
                 if let Some(repo) = &repository2 {
-                    tag.time = get_blame_time(&tag, repo);
+                    tag.git_info = tag.get_blame_info(repo);
                 }
             }
             tag
@@ -153,16 +152,4 @@ fn open_inside_repository<P: AsRef<Path>>(path: P) -> Option<Repository> {
 /// Try to strip the leading `./` or does nothing
 fn try_strip_leading_dot(path: &Path) -> &Path {
     path.strip_prefix("./").unwrap_or(path)
-}
-
-/// Get the blame for a tag and the time for the final commit
-fn get_blame_time(tag: &Tag, repo: &Repository) -> Option<SystemTime> {
-    let blame = repo
-        .blame_file(try_strip_leading_dot(&tag.path), Default::default())
-        .ok()?;
-    let blame_hunk = blame.get_line(tag.line)?;
-    let commit = repo.find_commit(blame_hunk.final_commit_id()).ok()?;
-    let seconds = commit.time().seconds();
-    let duration = Duration::new(seconds as u64, 0);
-    Some(SystemTime::UNIX_EPOCH + duration)
 }

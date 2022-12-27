@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use chrono::{DateTime, Local};
 use clap::Parser;
 use todl::{
     search_files,
@@ -63,19 +62,10 @@ fn main() {
         let tag_msg = format!("{}: {}", tag.kind, tag.message);
         let length = 40;
         let tag_msg = clamp_str(&tag_msg, length);
-        let time = tag
-            .time
-            .map(|t| {
-                let datetime: DateTime<Local> = t.into();
-                format!("{}", datetime.format("%F %T"))
-            })
-            .unwrap_or_default();
-        println!(
-            "{:length$} {} {}:{}",
-            tag_msg,
-            time,
-            tag.path.display(),
-            tag.line
-        );
+        if let Some(git_info) = &tag.git_info {
+            println!("{:length$} {} {}:{}", tag_msg, git_info, tag.path.display(), tag.line);
+        } else {
+            println!("{:length$} {}:{}", tag_msg, tag.path.display(), tag.line);
+        }
     }
 }
