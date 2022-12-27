@@ -2,6 +2,8 @@
 
 A tool that finds comment tags in source code.
 
+Do you like leaving todo comments in your code but want a way to easily find them? Use grep! But if you want different kinds of tags (optimize, fix, bug, etc...), want more information (when comments were last changed) or you are just lazy then todl can help.
+
 ### What are comment tags?
 
 [Wikipedia Comment Tags](https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags)
