@@ -1,29 +1,64 @@
 # TODL
 
+![](https://img.shields.io/crates/v/todl)
+![](https://img.shields.io/crates/l/todl)
+![](https://img.shields.io/docsrs/todl)
+
 A tool that finds comment tags in source code.
 
 Do you like leaving todo comments in your code but want a way to easily find them? Use grep! But if you want different kinds of tags (optimize, fix, bug, etc...), want more information (when comments were last changed) or you are just lazy then todl can help.
 
 ### What are comment tags?
 
+Comment tags are labels at the start of comments to make it easier to find and convey meaning.
+```
+// TODO: Make this function do something
+fn foo() -> u32 {
+    0
+}
+```
+
 [Wikipedia Comment Tags](https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags)
 
 ### What comment tags are supported?
 
-C style comments and rust todo!() macros.
+C style comments and rust `todo!()` macros.
+
+Supported tags include (case insensitive):
+ - TODO
+ - BUG
+ - DEBUG
+ - FIX
+ - FIXME
+ - NOTE
+ - NB
+ - UNDONE
+ - HACK
+ - BODGE
+ - KLUDGE
+ - XXX
+ - OPTIMIZE
+ - OPTIMIZEME
+ - OPTIMISE
+ - OPTIMISEME
+ - SAFETY
+ - INVARIANT
+ - LINT
+ - IGNORED
 
 ### What if my comments aren't supported?
 
-There is support for custom tags but if you are using a language that is not currently supported raise an issue for it here [Issues](https://github.com/RuairidhWilliamson/todl/issues).
+There is support for custom tags but if you are using a language that is not currently supported raise an issue for it here [issues](https://github.com/RuairidhWilliamson/todl/issues).
 
 To find custom tags use `todl -l custom`
 
-## Usage
-
+## Install
 You can install todl as a cli tool
 ```
 cargo install todl
 ```
+
+## Usage
 
 To search the current directory
 ```
