@@ -1,8 +1,8 @@
 # TODL
 
-![](https://img.shields.io/crates/v/todl)
-![](https://img.shields.io/crates/l/todl)
-![](https://img.shields.io/docsrs/todl)
+[![](https://img.shields.io/crates/v/todl)](https://crates.io/crates/todl)
+[![](https://img.shields.io/crates/l/todl)](https://github.com/RuairidhWilliamson/todl/blob/main/LICENSE.md)
+[![](https://img.shields.io/docsrs/todl)](https://docs.rs/todl)
 
 A tool that finds comment tags in source code.
 
