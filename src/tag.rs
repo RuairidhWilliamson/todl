@@ -5,6 +5,7 @@ use std::{
 };
 
 use chrono::{DateTime, Local};
+use crossterm::style::Color;
 use git2::Repository;
 
 use crate::try_strip_leading_dot;
@@ -70,6 +71,14 @@ impl TagKind {
             TagKind::Lint => TagLevel::Information,
             TagKind::Ignored => TagLevel::Information,
             TagKind::Custom(_) => TagLevel::Custom,
+        }
+    }
+
+    /// Gets the terminal color for a tag kind
+    pub fn color(&self) -> Color {
+        match self {
+            TagKind::TodoMacro => Color::Magenta,
+            _ => self.level().color(),
         }
     }
 }
@@ -169,6 +178,18 @@ pub enum TagLevel {
     /// Includes:
     /// - [`TagKind::Custom`]
     Custom,
+}
+
+impl TagLevel {
+    /// Returns the terminal color for the tag level
+    pub fn color(&self) -> Color {
+        match self {
+            TagLevel::Fix => Color::Red,
+            TagLevel::Improvement => Color::Blue,
+            TagLevel::Information => Color::Grey,
+            TagLevel::Custom => Color::Yellow,
+        }
+    }
 }
 
 impl std::fmt::Display for TagLevel {

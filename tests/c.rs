@@ -10,7 +10,7 @@ fn find_comments_c() {
     const SOURCE: &str = "
         // TODO: Find the todo
         // Optimize: Make it faster
-        /* Hack: This is hacky 😄 */
+        /* Hack: This is hacky */
         // fIX: Fix the bugs
         /* SAFETY: Wear a hard hat */
         /* Undone: Something has been taken away */
