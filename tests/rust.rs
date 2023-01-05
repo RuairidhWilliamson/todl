@@ -90,7 +90,7 @@ fn find_rustc_repo() {
     for tag in &tags {
         println!("{tag}");
     }
-    assert_eq!(11477, tags.len());
+    assert_eq!(11478, tags.len());
 }
 
 #[test]

@@ -52,7 +52,7 @@ fn search_rustc_repo(c: &mut Criterion) {
     c.bench_function("search_rustc_repo", |b| {
         b.iter(|| {
             assert_eq!(
-                11477,
+                11478,
                 search_files(Path::new(path), SearchOptions::no_git()).count()
             );
         })

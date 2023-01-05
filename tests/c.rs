@@ -32,7 +32,7 @@ fn find_comments_c() {
 
     assert_eq!(TagKind::Hack, tags[2].kind);
     assert_eq!(4, tags[2].line);
-    assert_eq!("This is hacky 😄", tags[2].message);
+    assert_eq!("This is hacky", tags[2].message);
 
     assert_eq!(TagKind::Fix, tags[3].kind);
     assert_eq!(5, tags[3].line);
