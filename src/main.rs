@@ -35,6 +35,10 @@ struct Args {
     /// performance
     #[arg(short = 'b', long, default_value_t = false)]
     no_blame: bool,
+
+    /// Disables outputting the comment count on the last line
+    #[arg(long, default_value_t = false)]
+    no_count: bool,
 }
 
 lazy_static! {
@@ -83,7 +87,7 @@ fn main() {
         git_blame: !args.no_blame,
     };
 
-    paths
+    let count = paths
         .iter()
         .flat_map(|path| search_files(path, search_options))
         .filter(|tag| args.levels.contains(&tag.kind.level()))
@@ -93,7 +97,13 @@ fn main() {
             };
             tag_filter == &tag.kind
         })
-        .for_each(print_tag);
+        .map(print_tag)
+        .count();
+
+    if !args.no_count {
+        println!();
+        println!("Found {count} results");
+    }
 }
 
 fn print_tag(tag: Tag) {
@@ -132,7 +142,7 @@ fn print_tag(tag: Tag) {
         color_print!(Color::Blue, "{} ", format_system_time(git_info.time));
         color_print!(Color::Green, "{}", git_info.author);
     }
-    println!()
+    println!();
 }
 
 fn format_system_time(time: SystemTime) -> impl std::fmt::Display {
