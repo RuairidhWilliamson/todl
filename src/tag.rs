@@ -295,7 +295,7 @@ impl Tag {
 }
 
 /// Git information about a tag
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct GitInfo {
     /// The last time the tag line was modified
     pub time: SystemTime,

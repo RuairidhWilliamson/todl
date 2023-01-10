@@ -39,6 +39,14 @@ struct Args {
     /// Disables outputting the comment count on the last line
     #[arg(long, default_value_t = false)]
     no_count: bool,
+
+    /// Sort the tags by the time they were changed
+    #[arg(short, long, default_value_t = false)]
+    sort: bool,
+
+    /// Reverse the sorted list of tags (only applied if sort is enabled)
+    #[arg(short, long, default_value_t = false)]
+    reverse: bool
 }
 
 lazy_static! {
@@ -87,7 +95,7 @@ fn main() {
         git_blame: !args.no_blame,
     };
 
-    let count = paths
+    let tags = paths
         .iter()
         .flat_map(|path| search_files(path, search_options))
         .filter(|tag| args.levels.contains(&tag.kind.level()))
@@ -96,9 +104,22 @@ fn main() {
                 return true;
             };
             tag_filter == &tag.kind
-        })
-        .map(print_tag)
-        .count();
+        });
+    let count = if args.sort {
+        let mut tag_vec: Vec<Tag> = tags.collect();
+        tag_vec.sort_by(|a, b| {
+            let ordering = b.git_info.cmp(&a.git_info);
+            if args.reverse {
+                ordering.reverse()
+            } else {
+                ordering
+            }
+        });
+
+        tag_vec.into_iter().map(print_tag).count()
+    } else {
+        tags.map(print_tag).count()
+    };
 
     if !args.no_count {
         println!();
