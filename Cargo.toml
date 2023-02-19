@@ -13,11 +13,11 @@ exclude = [
 [dependencies]
 walkdir = "2"
 regex = "1"
-git2 = "0.16"
+git2 = { version = "0.16", features = ["vendored-openssl"] }
 lazy_static = "1.4"
 clap = { version = "4.0", features = ["derive"] }
 chrono = "0.4"
-crossterm = "0.25"
+crossterm = "0.26"
 atty = "0.2.14"
 unicode-segmentation = "1.10.0"
 
