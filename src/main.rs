@@ -47,6 +47,10 @@ struct Args {
     /// Reverse the sorted list of tags (only applied if sort is enabled)
     #[arg(short, long, default_value_t = false)]
     reverse: bool,
+
+    /// Output as json
+    #[arg(short, long, default_value_t = false)]
+    json: bool,
 }
 
 lazy_static! {
@@ -95,17 +99,19 @@ fn main() {
         git_blame: !args.no_blame,
     };
 
-    let tags = paths
-        .iter()
-        .flat_map(|path| search_files(path, search_options))
-        .filter(|tag| args.levels.contains(&tag.kind.level()))
-        .filter(|tag| {
-            let Some(tag_filter) = &args.tag else {
+    let mut tags: Box<dyn Iterator<Item = Tag>> = Box::new(
+        paths
+            .iter()
+            .flat_map(|path| search_files(path, search_options))
+            .filter(|tag| args.levels.contains(&tag.kind.level()))
+            .filter(|tag| {
+                let Some(tag_filter) = &args.tag else {
                 return true;
             };
-            tag_filter == &tag.kind
-        });
-    let count = if args.sort {
+                tag_filter == &tag.kind
+            }),
+    );
+    if args.sort {
         let mut tag_vec: Vec<Tag> = tags.collect();
         tag_vec.sort_by(|a, b| {
             let ordering = b.git_info.cmp(&a.git_info);
@@ -116,12 +122,21 @@ fn main() {
             }
         });
 
-        tag_vec.into_iter().map(print_tag).count()
-    } else {
-        tags.map(print_tag).count()
-    };
+        tags = Box::new(tag_vec.into_iter())
+    }
+
+    if args.json {
+        let tags_vec: Vec<Tag> = tags.collect();
+        println!(
+            "{}",
+            serde_json::ser::to_string_pretty(&tags_vec).expect("could not serialize to json")
+        );
+        return;
+    }
+    let tags = tags.map(print_tag);
 
     if !args.no_count {
+        let count = tags.count();
         println!();
         println!("Found {count} results");
     }

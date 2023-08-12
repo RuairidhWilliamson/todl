@@ -7,12 +7,13 @@ use std::{
 use chrono::{DateTime, Local};
 use crossterm::style::Color;
 use git2::Repository;
+use serde::Serialize;
 
 use crate::try_strip_leading_dot;
 
 // Incomplete list based on https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags
 /// The kind of tag found. (Tags are not case sensitive)
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum TagKind {
     /// `TODO`
     Todo,
@@ -235,7 +236,7 @@ impl FromStr for TagLevel {
 }
 
 /// Tag represents a comment tag found in a source file.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Tag {
     /// The relative path of the source file
     pub path: PathBuf,
@@ -295,7 +296,7 @@ impl Tag {
 }
 
 /// Git information about a tag
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub struct GitInfo {
     /// The last time the tag line was modified
     pub time: SystemTime,

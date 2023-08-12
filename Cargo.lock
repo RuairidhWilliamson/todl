@@ -998,6 +998,8 @@ dependencies = [
  "git2",
  "lazy_static",
  "regex",
+ "serde",
+ "serde_json",
  "unicode-segmentation",
  "walkdir",
 ]

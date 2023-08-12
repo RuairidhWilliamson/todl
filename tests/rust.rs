@@ -83,14 +83,14 @@ fn find_rustc_repo() {
     let path = Path::new("temp/rust");
     // Clone or open the repo
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
-    repo.set_head("refs/tags/1.64.0").unwrap();
+    repo.set_head("refs/tags/1.71.0").unwrap();
 
     let tags: Vec<_> = search_files(path, SearchOptions::no_git()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
     }
-    assert_eq!(11478, tags.len());
+    assert_eq!(13966, tags.len());
 }
 
 #[test]

@@ -47,12 +47,12 @@ fn search_rustc_repo(c: &mut Criterion) {
     let path = "temp/rust";
     // Clone or open the repo
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
-    repo.set_head("refs/tags/1.64.0").unwrap();
+    repo.set_head("refs/tags/1.71.0").unwrap();
 
     c.bench_function("search_rustc_repo", |b| {
         b.iter(|| {
             assert_eq!(
-                11478,
+                13966,
                 search_files(Path::new(path), SearchOptions::no_git()).count()
             );
         })
