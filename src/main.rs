@@ -20,7 +20,7 @@ struct Args {
     paths: Vec<PathBuf>,
 
     /// Only show tags of based on level
-    #[arg(short, long, default_values = ["fix", "improvement", "information", "custom"])]
+    #[arg(short, long, default_values = ["fix", "improvement"])]
     levels: Vec<TagLevel>,
 
     /// Only search for a specific tag
@@ -46,7 +46,7 @@ struct Args {
 
     /// Reverse the sorted list of tags (only applied if sort is enabled)
     #[arg(short, long, default_value_t = false)]
-    reverse: bool
+    reverse: bool,
 }
 
 lazy_static! {
