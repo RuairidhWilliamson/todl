@@ -15,6 +15,7 @@ use todl::{
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, Parser)]
+#[command(version, about)]
 struct Args {
     /// Paths to search for source files, defaults to `.`
     paths: Vec<PathBuf>,
