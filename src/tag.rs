@@ -1,5 +1,5 @@
 use std::{
-    path::PathBuf,
+    path::{Path, PathBuf},
     str::FromStr,
     time::{Duration, SystemTime},
 };
@@ -8,8 +8,6 @@ use chrono::{DateTime, Local};
 use crossterm::style::Color;
 use git2::Repository;
 use serde::Serialize;
-
-use crate::try_strip_leading_dot;
 
 // Incomplete list based on https://en.wikipedia.org/wiki/Comment_(computer_programming)#Tags
 /// The kind of tag found. (Tags are not case sensitive)
@@ -279,10 +277,9 @@ impl std::fmt::Display for Tag {
 
 impl Tag {
     /// Get the blame for a tag. Gets the time and author for the final commit
-    pub fn get_blame_info(&self, repo: &Repository) -> Option<GitInfo> {
-        let blame = repo
-            .blame_file(try_strip_leading_dot(&self.path), Default::default())
-            .ok()?;
+    pub fn get_blame_info(&self, repo_path: &Path, repo: &Repository) -> Option<GitInfo> {
+        let path = self.path.strip_prefix(repo_path).ok()?;
+        let blame = repo.blame_file(path, Default::default()).ok()?;
         let blame_hunk = blame.get_line(self.line)?;
         let commit = repo.find_commit(blame_hunk.final_commit_id()).ok()?;
         let seconds = commit.time().seconds();

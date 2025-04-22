@@ -2,10 +2,9 @@ use std::{io::Cursor, path::Path};
 
 use git2::Repository;
 use todl::{
-    search_files,
+    SearchOptions, search_files,
     source::{SourceFile, SourceKind},
     tag::TagKind,
-    SearchOptions,
 };
 
 #[test]

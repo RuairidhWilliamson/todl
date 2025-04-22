@@ -102,7 +102,7 @@ pub fn search_files<P: AsRef<Path>>(
         git_blame,
     } = search_options;
 
-    WalkDir::new(path)
+    WalkDir::new(&path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
@@ -127,7 +127,7 @@ pub fn search_files<P: AsRef<Path>>(
         .map(move |mut tag| {
             if git_blame {
                 if let Some(repo) = &repository2 {
-                    tag.git_info = tag.get_blame_info(repo);
+                    tag.git_info = tag.get_blame_info(path.as_ref(), repo);
                 }
             }
             tag
