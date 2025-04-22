@@ -2,8 +2,8 @@
 name = "todl"
 description = "Tool for finding comment tags in source code"
 version = "0.2.0"
-edition = "2021"
-rust-version = "1.80"
+edition = "2024"
+rust-version = "1.85"
 license = "MIT"
 repository = "https://github.com/RuairidhWilliamson/todl"
 exclude = [
