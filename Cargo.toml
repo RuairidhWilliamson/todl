@@ -3,7 +3,7 @@ name = "todl"
 description = "Tool for finding comment tags in source code"
 version = "0.2.0"
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.80"
 license = "MIT"
 repository = "https://github.com/RuairidhWilliamson/todl"
 exclude = [
@@ -14,7 +14,6 @@ exclude = [
 walkdir = "2"
 regex = "1"
 git2 = { version = "0.16" }
-lazy_static = "1.4"
 clap = { version = "4.0", features = ["derive"] }
 chrono = "0.4"
 crossterm = "0.26"

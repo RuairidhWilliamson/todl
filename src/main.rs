@@ -1,4 +1,4 @@
-use std::{io::Write, path::PathBuf, time::SystemTime};
+use std::{io::Write, path::PathBuf, sync::LazyLock, time::SystemTime};
 
 use chrono::{DateTime, Local};
 use clap::Parser;
@@ -6,7 +6,6 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor},
     QueueableCommand,
 };
-use lazy_static::lazy_static;
 use todl::{
     search_files,
     tag::{TagKind, TagLevel},
@@ -54,12 +53,12 @@ struct Args {
     json: bool,
 }
 
-lazy_static! {
-    static ref STDOUT_ATTY: bool = atty::is(atty::Stream::Stdout);
-    static ref TERMINAL_WIDTH: usize = crossterm::terminal::size()
+static STDOUT_ATTY: LazyLock<bool> = LazyLock::new(|| atty::is(atty::Stream::Stdout));
+static TERMINAL_WIDTH: LazyLock<usize> = LazyLock::new(|| {
+    crossterm::terminal::size()
         .map(|s| s.0 as usize)
-        .unwrap_or(120);
-}
+        .unwrap_or(120)
+});
 
 macro_rules! color_print {
     ($color:expr, $($arg:tt)*) => {
@@ -107,8 +106,8 @@ fn main() {
             .filter(|tag| args.levels.contains(&tag.kind.level()))
             .filter(|tag| {
                 let Some(tag_filter) = &args.tag else {
-                return true;
-            };
+                    return true;
+                };
                 tag_filter == &tag.kind
             }),
     );

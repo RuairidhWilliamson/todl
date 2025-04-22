@@ -996,7 +996,6 @@ dependencies = [
  "criterion",
  "crossterm",
  "git2",
- "lazy_static",
  "regex",
  "serde",
  "serde_json",
