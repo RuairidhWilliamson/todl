@@ -107,9 +107,7 @@ static RUST_TODO_MACRO: LazyLock<Regex> = LazyLock::new(|| {
 
 impl<R: Read> SourceFile<R> {
     fn find_rust_todo_macro(&self) -> Option<Tag> {
-        let Some(caps) = RUST_TODO_MACRO.captures(&self.line) else {
-            return None;
-        };
+        let caps = RUST_TODO_MACRO.captures(&self.line)?;
         let message = caps
             .get(1)
             .map(|x| x.as_str().to_owned())
@@ -124,9 +122,7 @@ impl<R: Read> SourceFile<R> {
     }
 
     fn find_clike_comment(&self) -> Option<Tag> {
-        let Some(caps) = CLIKE_COMMENT_TAG_REGEX.captures(&self.line) else {
-            return None;
-        };
+        let caps = CLIKE_COMMENT_TAG_REGEX.captures(&self.line)?;
         let raw_tag = caps.get(1)?.as_str();
         if raw_tag == "https" || raw_tag == "http" {
             return None;
