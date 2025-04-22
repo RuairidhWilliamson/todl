@@ -98,7 +98,7 @@ impl<R: Read> SourceFile<R> {
 }
 
 static CLIKE_COMMENT_TAG_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"/(?:/+|\*+)!? ?(?P<tag>[!a-zA-Z0-9_]+): ?(?P<msg>[^:].+)")
+    Regex::new(r"/(?:/+|\*+)!? ?(?P<tag>[!a-zA-Z0-9_]+): ?(?P<msg>[^:/].+)")
         .expect("could not compile clike comment regex")
 });
 static RUST_TODO_MACRO: LazyLock<Regex> = LazyLock::new(|| {
@@ -124,19 +124,16 @@ impl<R: Read> SourceFile<R> {
     fn find_clike_comment(&self) -> Option<Tag> {
         let caps = CLIKE_COMMENT_TAG_REGEX.captures(&self.line)?;
         let raw_tag = caps.get(1)?.as_str();
-        if raw_tag == "https" || raw_tag == "http" {
-            return None;
-        }
         let kind = TagKind::new(raw_tag);
-        let mut message = caps.get(2)?.as_str().to_owned();
+        let mut message = caps.get(2)?.as_str().trim();
         if message.ends_with("*/") {
-            message = message[..message.len() - 2].trim().to_owned();
+            message = message[..message.len() - 2].trim();
         }
         Some(Tag {
             kind,
             line: self.line_number,
             path: self.path.clone(),
-            message,
+            message: message.to_owned(),
             git_info: None,
         })
     }

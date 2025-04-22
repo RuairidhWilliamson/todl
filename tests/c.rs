@@ -54,12 +54,22 @@ fn find_comments_c() {
 #[test]
 fn dont_find_urls() {
     const SOURCE: &str = "
-        http://example.com
-        https://www.example.com
-        file://relative-path
-        file:///absolute-path
+        // http://example.com
+        // https://www.example.com
+        // file://relative-path
+        // file:///absolute-path
     ";
     let s = Cursor::new(SOURCE);
     let tags: Vec<_> = SourceFile::new(SourceKind::CLike, Path::new("testing"), s).collect();
-    assert!(tags.is_empty(), "unexpected tags: {tags:?}");
+    assert!(tags.is_empty(), "unexpected tags: {tags:#?}");
+}
+
+#[test]
+fn dont_include_cr() {
+    const SOURCE: &str = "// TODO: Banana\r\nfoo";
+    let s = Cursor::new(SOURCE);
+    let tags: Vec<_> = SourceFile::new(SourceKind::CLike, Path::new("testing"), s).collect();
+    println!("{tags:?}");
+    assert_eq!(tags.len(), 1);
+    assert_eq!(tags[0].message, "Banana");
 }
