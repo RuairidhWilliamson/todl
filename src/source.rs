@@ -26,7 +26,9 @@ impl SourceKind {
         match ext.to_str()? {
             "rs" => Some(Self::Rust),
             "c" | "cpp" | "cc" | "h" | "hpp" | "java" | "cs" => Some(Self::CLike),
-            _ => None,
+            "py" => None,
+            // Fallback to CLike
+            _ => Some(Self::CLike),
         }
     }
 }
@@ -81,10 +83,7 @@ impl<R: Read> SourceFile<R> {
     fn next_clike(&mut self) -> Option<Tag> {
         loop {
             self.line.clear();
-            let n = self
-                .inner
-                .read_line(&mut self.line)
-                .expect("read line failed");
+            let n = self.inner.read_line(&mut self.line).ok()?;
             // EOF
             if n == 0 {
                 return None;

@@ -1,11 +1,10 @@
 use std::{io::Cursor, path::Path};
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use git2::Repository;
 use todl::{
-    search_files,
+    SearchOptions, search_files,
     source::{SourceFile, SourceKind},
-    SearchOptions,
 };
 
 fn search_short_string(c: &mut Criterion) {
@@ -26,43 +25,23 @@ fn search_short_string(c: &mut Criterion) {
 
 fn search_rust_backtrace_repo(c: &mut Criterion) {
     let url = "https://github.com/rust-lang/backtrace-rs.git";
+    let rev = "refs/tags/0.3.67";
     let path = "temp/backtrace-rs";
     // Clone or open the repo
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
-    repo.set_head("refs/tags/0.3.67").unwrap();
+    let (object, _) = repo.revparse_ext(rev).unwrap();
+    repo.checkout_tree(&object, None).unwrap();
+    repo.set_head(rev).unwrap();
 
     c.bench_function("search_rust_backtrace_repo", |b| {
         b.iter(|| {
             assert_eq!(
-                18,
+                17,
                 search_files(Path::new(path), SearchOptions::no_git()).count()
             );
         })
     });
 }
 
-fn search_rustc_repo(c: &mut Criterion) {
-    // We will clone the actual rust repo into temp
-    let url = "https://github.com/rust-lang/rust.git";
-    let path = "temp/rust";
-    // Clone or open the repo
-    let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
-    repo.set_head("refs/tags/1.71.0").unwrap();
-
-    c.bench_function("search_rustc_repo", |b| {
-        b.iter(|| {
-            assert_eq!(
-                13966,
-                search_files(Path::new(path), SearchOptions::no_git()).count()
-            );
-        })
-    });
-}
-
-criterion_group!(
-    benches,
-    search_short_string,
-    search_rust_backtrace_repo,
-    search_rustc_repo
-);
+criterion_group!(benches, search_short_string, search_rust_backtrace_repo);
 criterion_main!(benches);
