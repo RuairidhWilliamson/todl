@@ -99,7 +99,7 @@ impl<R: Read> SourceFile<R> {
 
 lazy_static! {
     static ref CLIKE_COMMENT_TAG_REGEX: Regex =
-        Regex::new(r"/(?:/+|\*+)!? ?(?P<tag>[!a-zA-Z0-9_]+): ?(?P<msg>.+)")
+        Regex::new(r"/(?:/+|\*+)!? ?(?P<tag>[!a-zA-Z0-9_]+): ?(?P<msg>[^:].+)")
             .expect("could not compile clike comment regex");
     static ref RUST_TODO_MACRO: Regex =
         Regex::new(r#"todo!\((?:"([^"]*)")?\)"#).expect("could not compile rust todo macro regex");

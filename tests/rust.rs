@@ -80,10 +80,13 @@ fn find_todo_macro() {
 fn find_rustc_repo() {
     // We will clone the actual rust repo into temp
     let url = "https://github.com/rust-lang/rust.git";
+    let rev = "refs/tags/1.71.0";
     let path = Path::new("temp/rust");
     // Clone or open the repo
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
-    repo.set_head("refs/tags/1.71.0").unwrap();
+    let (object, _) = repo.revparse_ext(rev).unwrap();
+    repo.checkout_tree(&object, None).unwrap();
+    repo.set_head(rev).unwrap();
 
     let tags: Vec<_> = search_files(path, SearchOptions::no_git()).collect();
     println!("Found {} tags", tags.len());
@@ -96,17 +99,20 @@ fn find_rustc_repo() {
 #[test]
 fn find_backtrace_repo() {
     let url = "https://github.com/rust-lang/backtrace-rs.git";
+    let rev = "refs/tags/0.3.67";
     let path = Path::new("temp/backtrace-rs");
     // Clone or open the repo
     let repo = Repository::clone(url, path).unwrap_or_else(|_err| Repository::open(path).unwrap());
-    repo.set_head("refs/tags/0.3.67").unwrap();
+    let (object, _) = repo.revparse_ext(rev).unwrap();
+    repo.checkout_tree(&object, None).unwrap();
+    repo.set_head(rev).unwrap();
 
     let tags: Vec<_> = search_files(path, SearchOptions::no_git()).collect();
     println!("Found {} tags", tags.len());
     for tag in &tags {
         println!("{tag}");
     }
-    assert_eq!(18, tags.len());
+    assert_eq!(17, tags.len());
 }
 
 #[test]
