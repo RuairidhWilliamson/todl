@@ -21,8 +21,7 @@
 //! }
 //! ```
 
-#![warn(clippy::unwrap_used)]
-#![warn(missing_docs)]
+#![warn(missing_docs, clippy::print_stdout, clippy::print_stderr)]
 
 use std::{fs::File, path::Path};
 
@@ -39,7 +38,7 @@ pub use tag::{Tag, TagKind, TagLevel};
 
 /// Options passed to [`search_files`]
 ///
-/// SearchOptions allow fine grain control over how search is performed. By default all options are
+/// [`SearchOptions`] allow fine grain control over how search is performed. By default all options are
 /// enabled. Disabling the git integration will speed up the search speed significantly. The
 /// function [`SearchOptions::no_git`] provides an easy way of specifying this.
 #[derive(Debug, Clone, Copy)]
@@ -104,7 +103,7 @@ pub fn search_files<P: AsRef<Path>>(
 
     WalkDir::new(&path)
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(Result::ok)
         .filter(|e| e.file_type().is_file())
         .filter_map(move |e| {
             if git_ignore {

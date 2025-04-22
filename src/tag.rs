@@ -39,7 +39,7 @@ pub enum TagKind {
     Lint,
     /// `IGNORED`
     Ignored,
-    /// Anything that doesn't match one of the TagKind variants but still looks like a comment tag
+    /// Anything that doesn't match one of the [`TagKind`] variants but still looks like a comment tag
     /// Specifically excluded from this are `http` and `https`
     Custom(String),
 }
@@ -56,27 +56,25 @@ impl TagKind {
     /// Gets the tag level for a tag
     pub fn level(&self) -> TagLevel {
         match self {
-            TagKind::Todo => TagLevel::Improvement,
-            TagKind::TodoMacro => TagLevel::Improvement,
-            TagKind::Bug => TagLevel::Fix,
-            TagKind::Fix => TagLevel::Fix,
-            TagKind::Note => TagLevel::Information,
-            TagKind::Undone => TagLevel::Information,
-            TagKind::Hack => TagLevel::Information,
-            TagKind::Xxx => TagLevel::Information,
-            TagKind::Optimize => TagLevel::Improvement,
-            TagKind::Safety => TagLevel::Information,
-            TagKind::Invariant => TagLevel::Information,
-            TagKind::Lint => TagLevel::Information,
-            TagKind::Ignored => TagLevel::Information,
-            TagKind::Custom(_) => TagLevel::Custom,
+            Self::Todo | Self::TodoMacro => TagLevel::Improvement,
+            Self::Bug | Self::Fix => TagLevel::Fix,
+            Self::Note
+            | Self::Undone
+            | Self::Hack
+            | Self::Xxx
+            | Self::Optimize
+            | Self::Safety
+            | Self::Invariant
+            | Self::Lint
+            | Self::Ignored => TagLevel::Information,
+            Self::Custom(_) => TagLevel::Custom,
         }
     }
 
     /// Gets the terminal color for a tag kind
     pub fn color(&self) -> Color {
         match self {
-            TagKind::TodoMacro => Color::Magenta,
+            Self::TodoMacro => Color::Magenta,
             _ => self.level().color(),
         }
     }
@@ -183,10 +181,10 @@ impl TagLevel {
     /// Returns the terminal color for the tag level
     pub fn color(&self) -> Color {
         match self {
-            TagLevel::Fix => Color::Red,
-            TagLevel::Improvement => Color::Blue,
-            TagLevel::Information => Color::Grey,
-            TagLevel::Custom => Color::Yellow,
+            Self::Fix => Color::Red,
+            Self::Improvement => Color::Blue,
+            Self::Information => Color::Grey,
+            Self::Custom => Color::Yellow,
         }
     }
 }
@@ -283,7 +281,7 @@ impl Tag {
         let blame_hunk = blame.get_line(self.line)?;
         let commit = repo.find_commit(blame_hunk.final_commit_id()).ok()?;
         let seconds = commit.time().seconds();
-        let duration = Duration::new(seconds as u64, 0);
+        let duration = Duration::from_secs(u64::try_from(seconds).ok()?);
         let git_info = GitInfo {
             time: SystemTime::UNIX_EPOCH + duration,
             author: commit.author().name()?.to_owned(),

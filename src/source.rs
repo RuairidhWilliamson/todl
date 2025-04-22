@@ -1,5 +1,5 @@
 use std::{
-    io::{BufRead, BufReader, Read},
+    io::{BufRead as _, BufReader, Read},
     path::{Path, PathBuf},
     sync::LazyLock,
 };
@@ -25,7 +25,7 @@ impl SourceKind {
         let ext = path.extension()?;
         match ext.to_str()? {
             "rs" => Some(Self::Rust),
-            "c" | "cpp" | "cc" | "h" | "hpp" | "java" | "cs" => Some(Self::CLike),
+            // TODO: Implement python like
             "py" => None,
             // Fallback to CLike
             _ => Some(Self::CLike),

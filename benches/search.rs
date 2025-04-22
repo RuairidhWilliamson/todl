@@ -1,3 +1,5 @@
+#![allow(clippy::unwrap_used)]
+
 use std::{io::Cursor, path::Path};
 
 use criterion::{Criterion, criterion_group, criterion_main};
@@ -19,7 +21,7 @@ fn search_short_string(c: &mut Criterion) {
             let source = Cursor::new(SOURCE);
             let count = SourceFile::new(SourceKind::Rust, Path::new("testing"), source).count();
             assert_eq!(3, count);
-        })
+        });
     });
 }
 
@@ -39,7 +41,7 @@ fn search_rust_backtrace_repo(c: &mut Criterion) {
                 17,
                 search_files(Path::new(path), SearchOptions::no_git()).count()
             );
-        })
+        });
     });
 }
 
