@@ -26,7 +26,7 @@
 use std::{fs::File, path::Path};
 
 use git2::Repository;
-use walkdir::WalkDir;
+use ignore::WalkBuilder;
 
 /// Identify and search source files
 pub mod source;
@@ -95,27 +95,19 @@ pub fn search_files<P: AsRef<Path>>(
     search_options: SearchOptions,
 ) -> impl Iterator<Item = Tag> {
     let repository = open_inside_repository(&path);
-    let repository2 = open_inside_repository(&path);
     let SearchOptions {
         git_ignore,
         git_blame,
     } = search_options;
 
-    WalkDir::new(&path)
-        .into_iter()
+    WalkBuilder::new(&path)
+        .git_ignore(git_ignore)
+        .ignore(true)
+        .hidden(true)
+        .build()
         .filter_map(Result::ok)
-        .filter(|e| e.file_type().is_file())
+        .filter(|e| e.file_type().is_some_and(|ft| ft.is_file()))
         .filter_map(move |e| {
-            if git_ignore {
-                if let Some(repo) = &repository {
-                    if let Ok(ignored) = repo.status_should_ignore(try_strip_leading_dot(e.path()))
-                    {
-                        if ignored {
-                            return None;
-                        }
-                    }
-                }
-            }
             let kind = SourceKind::identify(e.path())?;
             let Ok(file) = File::open(e.path()) else {
                 return None;
@@ -125,7 +117,7 @@ pub fn search_files<P: AsRef<Path>>(
         .flatten()
         .map(move |mut tag| {
             if git_blame {
-                if let Some(repo) = &repository2 {
+                if let Some(repo) = &repository {
                     tag.git_info = tag.get_blame_info(path.as_ref(), repo);
                 }
             }
@@ -143,9 +135,4 @@ fn open_inside_repository<P: AsRef<Path>>(path: P) -> Option<Repository> {
         }
         p = p.parent()?;
     }
-}
-
-/// Try to strip the leading `./` or does nothing
-fn try_strip_leading_dot(path: &Path) -> &Path {
-    path.strip_prefix("./").unwrap_or(path)
 }

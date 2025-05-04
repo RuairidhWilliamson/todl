@@ -10,17 +10,28 @@ keywords = ["cli", "tool"]
 categories = ["command-line-utilities", "development-tools"]
 exclude = ["temp"]
 
+[features]
+cli = [
+  "color",
+  "dep:atty",
+  "dep:clap",
+  "dep:serde_json",
+  "dep:unicode-segmentation",
+]
+color = ["dep:crossterm"]
+default = ["cli"]
+
 [dependencies]
-walkdir = "2"
-regex = "1"
-git2 = { version = "0.16" }
-clap = { version = "4.0", features = ["derive"] }
+atty = { version = "0.2.14", optional = true }
 chrono = "0.4"
-crossterm = "0.26"
-atty = "0.2.14"
-unicode-segmentation = "1.10.0"
-serde_json = "1.0"
+clap = { version = "4.0", features = ["derive"], optional = true }
+crossterm = { version = "0.26", optional = true }
+git2 = "0.16"
+ignore = "0.4.23"
+regex = "1"
+serde_json = { version = "1.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
+unicode-segmentation = { version = "1.10.0", optional = true }
 
 [dev-dependencies]
 criterion = "0.4"

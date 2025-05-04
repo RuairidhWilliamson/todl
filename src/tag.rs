@@ -5,7 +5,6 @@ use std::{
 };
 
 use chrono::{DateTime, Local};
-use crossterm::style::Color;
 use git2::Repository;
 use serde::Serialize;
 
@@ -72,9 +71,10 @@ impl TagKind {
     }
 
     /// Gets the terminal color for a tag kind
-    pub fn color(&self) -> Color {
+    #[cfg(feature = "color")]
+    pub fn color(&self) -> crossterm::style::Color {
         match self {
-            Self::TodoMacro => Color::Magenta,
+            Self::TodoMacro => crossterm::style::Color::Magenta,
             _ => self.level().color(),
         }
     }
@@ -179,12 +179,13 @@ pub enum TagLevel {
 
 impl TagLevel {
     /// Returns the terminal color for the tag level
-    pub fn color(&self) -> Color {
+    #[cfg(feature = "color")]
+    pub fn color(&self) -> crossterm::style::Color {
         match self {
-            Self::Fix => Color::Red,
-            Self::Improvement => Color::Blue,
-            Self::Information => Color::Grey,
-            Self::Custom => Color::Yellow,
+            Self::Fix => crossterm::style::Color::Red,
+            Self::Improvement => crossterm::style::Color::Blue,
+            Self::Information => crossterm::style::Color::Grey,
+            Self::Custom => crossterm::style::Color::Yellow,
         }
     }
 }
